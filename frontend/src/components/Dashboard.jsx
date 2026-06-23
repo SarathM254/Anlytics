@@ -39,6 +39,13 @@ export default function Dashboard() {
         }
     };
 
+    // Helper to format date from YYYY-MM-DD to DD-MM-YYYY
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        const [year, month, day] = dateStr.split('-');
+        return `${day}-${month}-${year}`;
+    };
+
     // Transform and filter data for charts based on selectedDate
     const validSummaries = [...summaries]
         .sort((a, b) => new Date(a.operationalDate) - new Date(b.operationalDate))
@@ -47,14 +54,14 @@ export default function Dashboard() {
     // Debt Trajectory (Last 10 Days)
     const debtSummaries = validSummaries.slice(-10);
     const debtTrajectoryData = debtSummaries.map((s) => ({
-        name: s.operationalDate,
+        name: formatDate(s.operationalDate),
         value: (s.totalBillValue || 0) - (s.totalCashCollected || 0) 
     }));
 
     // Daily Value Submissions (Last 6 Days)
     const billVsCashSummaries = validSummaries.slice(-6);
     const billVsCashData = billVsCashSummaries.map(s => ({
-        date: s.operationalDate,
+        date: formatDate(s.operationalDate),
         billValue: s.totalBillValue || 0,
         cashCollected: s.totalCashCollected || 0
     }));
@@ -97,15 +104,15 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="lg:col-span-2 flex flex-col">
-                    <span className="text-xs text-neutral-400 italic mb-1">Showing last 10 days up to {selectedDate}</span>
+                    <span className="text-xs text-neutral-400 italic mb-1">Showing last 10 days up to {formatDate(selectedDate)}</span>
                     <DebtTrajectoryChart data={debtTrajectoryData} />
                 </div>
                 <div className="flex flex-col">
-                    <span className="text-xs text-neutral-400 italic mb-1">Showing last 6 days up to {selectedDate}</span>
+                    <span className="text-xs text-neutral-400 italic mb-1">Showing last 6 days up to {formatDate(selectedDate)}</span>
                     <BillVsCashChart data={billVsCashData} />
                 </div>
                 <div className="flex flex-col">
-                    <span className="text-xs text-neutral-400 italic mb-1">Showing data exactly for {selectedDate}</span>
+                    <span className="text-xs text-neutral-400 italic mb-1">Showing data exactly for {formatDate(selectedDate)}</span>
                     <BFSplitChart data={bfSplitData} />
                 </div>
             </div>
