@@ -12,6 +12,10 @@ app.use(express.json());
 
 app.use('/api/analytics', analyticsRoutes);
 
+app.get('/', (req, res) => {
+    res.json({ message: 'Analytics API is running' });
+});
+
 // Schedule ETL job every 2 minutes (only if not running on Vercel)
 if (!process.env.VERCEL) {
     cron.schedule('*/2 * * * *', () => {
