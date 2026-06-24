@@ -55,7 +55,7 @@ export default function Dashboard() {
     const debtSummaries = validSummaries.slice(-10);
     const debtTrajectoryData = debtSummaries.map((s) => ({
         name: formatDate(s.operationalDate),
-        value: (s.totalBillValue || 0) - (s.totalCashCollected || 0) 
+        value: s.totalOutstandingDebt || 0
     }));
 
     // Daily Value Submissions (Last 6 Days)

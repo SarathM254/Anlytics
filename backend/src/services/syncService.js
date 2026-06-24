@@ -51,6 +51,10 @@ const runSync = async () => {
                 });
             });
 
+            // Fetch users earlier to calculate totalOutstandingDebt
+            const users = await User.find({ role: "salesman" });
+            const totalOutstandingDebt = users.reduce((sum, user) => sum + (user.broughtForwardDebt || 0), 0);
+
             // Update or create DailySummary
             const isSealed = date < systemDate;
 
@@ -61,6 +65,7 @@ const runSync = async () => {
                 dailySummary.totalPhonePeCollected = totalPhonePeCollected;
                 dailySummary.totalLooseChangeCollected = totalLooseChangeCollected;
                 dailySummary.totalPaymentCollected = totalPaymentCollected;
+                dailySummary.totalOutstandingDebt = totalOutstandingDebt;
                 dailySummary.billedStockVolume = billedStockVolume;
                 dailySummary.isSealed = isSealed;
                 await dailySummary.save();
@@ -73,6 +78,7 @@ const runSync = async () => {
                     totalPhonePeCollected,
                     totalLooseChangeCollected,
                     totalPaymentCollected,
+                    totalOutstandingDebt,
                     billedStockVolume,
                     unbilledStockVolume: 0, // Mock for now
                     isSealed
@@ -80,7 +86,6 @@ const runSync = async () => {
             }
 
             // Consolidate Salesman Stats
-            const users = await User.find({ role: "salesman" });
             for (const user of users) {
                 const salesmanBills = bills.filter(b => b.salesmanId && b.salesmanId.toString() === user._id.toString());
                 const salesmanPayments = payments.filter(p => p.salesmanId && p.salesmanId.toString() === user._id.toString());

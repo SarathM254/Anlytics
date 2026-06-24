@@ -10,6 +10,7 @@ const dailySummarySchema = new mongoose.Schema({
     totalPhonePeCollected: Number,
     totalLooseChangeCollected: Number,
     totalPaymentCollected: Number,
+    totalOutstandingDebt: Number,
     billedStockVolume: Number,
     unbilledStockVolume: Number,
     isSealed: { type: Boolean, default: false }
