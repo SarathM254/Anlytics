@@ -12,13 +12,19 @@ app.use(express.json());
 
 app.use('/api/analytics', analyticsRoutes);
 
-// Schedule ETL job every 2 minutes
-cron.schedule('*/2 * * * *', () => {
-    console.log('Running scheduled ETL sync...');
-    runSync();
-});
+// Schedule ETL job every 2 minutes (only if not running on Vercel)
+if (!process.env.VERCEL) {
+    cron.schedule('*/2 * * * *', () => {
+        console.log('Running scheduled ETL sync...');
+        runSync();
+    });
+}
 
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+module.exports = app;
