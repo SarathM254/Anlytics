@@ -3,7 +3,14 @@ const { DailySummary, SalesmanSnapshot } = require('../models/analyticsModels');
 
 // Mock system date for testing purposes, typically this would come from a system config
 const getSystemDate = () => {
-    return new Date().toISOString().split('T')[0];
+    // Force date string to Indian Standard Time, format as YYYY-MM-DD
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+    return formatter.format(new Date());
 };
 
 const runSync = async () => {
@@ -15,6 +22,12 @@ const runSync = async () => {
         const billDates = await Bill.distinct('billingDate');
         const paymentDates = await Payment.distinct('paymentDate');
         const allDates = [...new Set([...billDates, ...paymentDates])];
+
+        // Force today's date into the processing list so current live stats are always snapped
+        if (!allDates.includes(systemDate)) {
+            allDates.push(systemDate);
+        }
+        allDates.sort(); // Ensure chronological processing
 
         for (const date of allDates) {
             // Check if snapshot is sealed
