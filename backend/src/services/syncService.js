@@ -1,4 +1,4 @@
-const { User, Bill, Payment } = require('../models/primaryModels');
+const { User, Bill, Payment, UpiPayment } = require('../models/primaryModels');
 const { DailySummary, SalesmanSnapshot } = require('../models/analyticsModels');
 
 // Mock system date for testing purposes, typically this would come from a system config
@@ -21,7 +21,28 @@ const runSync = async () => {
         // Get distinct dates from Bills and Payments
         const billDates = await Bill.distinct('billingDate');
         const paymentDates = await Payment.distinct('paymentDate');
-        const allDates = [...new Set([...billDates, ...paymentDates])];
+        
+        // Aggregate UPI payments to group by YYYY-MM-DD
+        const upiAggregation = await UpiPayment.aggregate([
+            { $match: { paymentMode: 'upi' } },
+            {
+                $group: {
+                    _id: {
+                        $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "Asia/Kolkata" }
+                    },
+                    transactionCount: { $sum: 1 }
+                }
+            }
+        ]);
+        
+        const upiCountsByDate = upiAggregation.reduce((acc, curr) => {
+            acc[curr._id] = curr.transactionCount;
+            return acc;
+        }, {});
+        
+        const upiDates = Object.keys(upiCountsByDate);
+
+        const allDates = [...new Set([...billDates, ...paymentDates, ...upiDates])];
 
         // Force today's date into the processing list so current live stats are always snapped
         if (!allDates.includes(systemDate)) {
@@ -70,6 +91,7 @@ const runSync = async () => {
 
             // Update or create DailySummary
             const isSealed = date < systemDate;
+            const totalUpiTransactions = upiCountsByDate[date] || 0;
 
             if (dailySummary) {
                 dailySummary.totalBillsSubmitted = totalBillsSubmitted;
@@ -80,6 +102,7 @@ const runSync = async () => {
                 dailySummary.totalPaymentCollected = totalPaymentCollected;
                 dailySummary.totalOutstandingDebt = totalOutstandingDebt;
                 dailySummary.billedStockVolume = billedStockVolume;
+                dailySummary.totalUpiTransactions = totalUpiTransactions;
                 dailySummary.isSealed = isSealed;
                 await dailySummary.save();
             } else {
@@ -94,6 +117,7 @@ const runSync = async () => {
                     totalOutstandingDebt,
                     billedStockVolume,
                     unbilledStockVolume: 0, // Mock for now
+                    totalUpiTransactions,
                     isSealed
                 });
             }

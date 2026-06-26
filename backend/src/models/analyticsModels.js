@@ -13,6 +13,7 @@ const dailySummarySchema = new mongoose.Schema({
     totalOutstandingDebt: Number,
     billedStockVolume: Number,
     unbilledStockVolume: Number,
+    totalUpiTransactions: { type: Number, default: 0 },
     isSealed: { type: Boolean, default: false }
 });
 

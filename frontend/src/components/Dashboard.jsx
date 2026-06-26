@@ -4,6 +4,7 @@ import { getSummaries, getSalesmenSnapshots, triggerSync } from '../services/api
 import DebtTrajectoryChart from './charts/DebtTrajectoryChart';
 import BillVsCashChart from './charts/BillVsCashChart';
 import BFSplitChart from './charts/BFSplitChart';
+import UpiTrajectoryChart from './charts/UpiTrajectoryChart';
 
 export default function Dashboard() {
     const [summaries, setSummaries] = useState([]);
@@ -71,6 +72,16 @@ export default function Dashboard() {
         value: s.broughtForwardDebtSnap || 0
     })).filter(d => d.value > 0);
 
+    // UPI Trajectory (From 2026-06-27 onwards)
+    const upiSummaries = summaries
+        .sort((a, b) => new Date(a.operationalDate) - new Date(b.operationalDate))
+        .filter(s => s.operationalDate >= '2026-06-27' && s.operationalDate <= selectedDate);
+        
+    const upiTrajectoryData = upiSummaries.map(s => ({
+        name: formatDate(s.operationalDate),
+        value: s.totalUpiTransactions || 0
+    }));
+
     return (
         <div className="min-h-screen bg-neutral-950 text-white p-6 md:p-10">
             <header className="flex flex-col md:flex-row justify-between items-center mb-10">
@@ -114,6 +125,10 @@ export default function Dashboard() {
                 <div className="flex flex-col">
                     <span className="text-xs text-neutral-400 italic mb-1">Showing data exactly for {formatDate(selectedDate)}</span>
                     <BFSplitChart data={bfSplitData} />
+                </div>
+                <div className="lg:col-span-2 flex flex-col">
+                    <span className="text-xs text-neutral-400 italic mb-1">Showing data from 27-06-2026 up to {formatDate(selectedDate)}</span>
+                    <UpiTrajectoryChart data={upiTrajectoryData} />
                 </div>
             </div>
         </div>

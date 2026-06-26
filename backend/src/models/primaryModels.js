@@ -43,4 +43,12 @@ const paymentSchema = new mongoose.Schema({
 
 const Payment = primaryDbConn.model('Payment', paymentSchema);
 
-module.exports = { User, Bill, Payment };
+// UPI Payment Model
+const upiPaymentSchema = new mongoose.Schema({
+    paymentMode: String,
+    status: String
+}, { timestamps: true, collection: 'upipayments' });
+
+const UpiPayment = primaryDbConn.model('UpiPayment', upiPaymentSchema);
+
+module.exports = { User, Bill, Payment, UpiPayment };
