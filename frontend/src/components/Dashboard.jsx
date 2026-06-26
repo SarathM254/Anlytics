@@ -63,7 +63,7 @@ export default function Dashboard() {
     const billVsCashData = billVsCashSummaries.map(s => ({
         date: formatDate(s.operationalDate),
         billValue: s.totalBillValue || 0,
-        cashCollected: s.totalCashCollected || 0
+        cashCollected: s.totalPaymentCollected || 0
     }));
 
     const bfSplitData = salesmenSnapshots.map(s => ({
